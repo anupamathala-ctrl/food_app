@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Manager Portal & Checkout App (Mock Backend)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Phosphor Icons for a clean, modern look -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Setting font to Inter and ensuring full height */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9; /* Light background for the whole page */
+        }
+        .logo-text {
+            color: #9B2341; /* Primary brand color (AWANA red/brown) */
+            font-size: 3rem; 
+            font-weight: 800;
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
+        .tagline {
+            color: #555;
+            letter-spacing: 0.15em;
+            font-size: 0.8rem;
+        }
+        /* Custom styles for the Manager Portal sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: #1a202c; /* Dark slate background */
+            transition: transform 0.3s ease;
+        }
+        .sidebar-link {
+            padding: 1rem 1.5rem;
+            color: #a0aec0; /* Light text */
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            border-radius: 0.5rem;
+            margin: 0.5rem;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: #2d3748; /* Slightly lighter on hover/active */
+            color: #ffffff;
+        }
+        .manager-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .data-header {
+            background-color: #edf2f7;
+        }
+        .brand-color {
+             color: #9B2341;
+        }
+        .bg-brand-primary {
+             background-color: #9B2341;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Primary Application Container -->
+    <div id="app-container">
+
+        <!-- Initial Auth Screen -->
+        <div id="auth-page" class="flex flex-col items-center justify-center min-h-screen p-4">
+            <div class="text-center mb-10">
+                <div class="logo-text">AWANA</div>
+                <div class="tagline uppercase">STAFF PORTAL LOGIN</div>
+                <p class="text-xs mt-2 text-gray-500 font-semibold">Mock Login: manager@awana.com / delivery@awana.com (Password: 123456)</p>
+            </div>
+
+            <div class="w-full max-w-sm manager-card">
+                <!-- Login Form -->
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="login-email" value="manager@awana.com" placeholder="staff@example.com" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-color focus:ring-brand-color p-3" required>
+                    </div>
+                    <div>
+                        <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="login-password" value="123456" placeholder="••••••••" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-color focus:ring-brand-color p-3" required>
+                    </div>
+                    <button type="submit" id="login-button" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-brand-primary hover:bg-red-800 transition duration-150">
+                        Login
+                    </button>
+                    <!-- Registration is hidden as we are using a mock backend -->
+                </form>
+
+                <p id="auth-message" class="mt-4 text-center text-sm text-red-500"></p>
+            </div>
+        </div>
+
+        <!-- Manager Dashboard Screen (Initially Hidden) -->
+        <div id="manager-page" class="hidden min-h-screen flex">
+            
+            <!-- Sidebar Navigation -->
+            <div class="sidebar flex flex-col p-4">
+                <div class="text-white text-2xl font-bold p-3 mb-6 flex items-center">
+                    <i class="ph-bold ph-chart-line-up mr-2 brand-color"></i> AWANA Staff
+                </div>
+                <nav class="flex-grow space-y-2">
+                    <a href="#" class="sidebar-link active" data-target="dashboard-content">
+                        <i class="ph-bold ph-gauge text-xl mr-3"></i> Dashboard
+                    </a>
+                    <a href="#" class="sidebar-link" data-target="menu-content">
+                        <i class="ph-bold ph-fork-knife text-xl mr-3"></i> Menu Management
+                    </a>
+                    <a href="#" class="sidebar-link" data-target="orders-content">
+                        <i class="ph-bold ph-bag text-xl mr-3"></i> Orders
+                    </a>
+                </nav>
+                
+                <!-- Role Toggle for Demonstration -->
+                <div class="mt-8 p-3 bg-gray-700 rounded-lg">
+                    <label for="role-toggle" class="block text-sm font-medium text-white mb-2">Simulated Role View:</label>
+                    <select id="role-toggle" class="w-full p-2 rounded-lg bg-gray-800 text-white border-none focus:ring-brand-color focus:border-brand-color">
+                        <option value="Manager">Manager</option>
+                        <option value="Delivery">Delivery Staff</option>
+                    </select>
+                </div>
+                <!-- END Role Toggle -->
+
+                <button id="logout-button" class="sidebar-link mt-4 justify-center">
+                    <i class="ph-bold ph-sign-out text-xl mr-3"></i> Logout (<span id="user-id-display" class="truncate"></span>)
+                </button>
+            </div>
+
+            <!-- Main Content Area -->
+            <main class="flex-grow p-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-8">Staff Portal</h1>
+
+                <!-- Content Area for Dashboard -->
+                <div id="dashboard-content" class="manager-content space-y-8">
+                    <h2 class="text-2xl font-semibold brand-color mb-6">Overview</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="manager-card border-b-4 border-green-500">
+                            <div class="text-3xl font-bold text-gray-900" id="total-orders">0</div>
+                            <div class="text-sm text-gray-500">Total Orders (Today)</div>
+                        </div>
+                        <div class="manager-card border-b-4 border-blue-500">
+                            <div class="text-3xl font-bold text-gray-900" id="total-revenue">$0.00</div>
+                            <div class="text-sm text-gray-500">Total Revenue (Today)</div>
+                        </div>
+                        <div class="manager-card border-b-4 border-yellow-500">
+                            <div class="text-3xl font-bold text-gray-900" id="active-menu-items">0</div>
+                            <div class="text-sm text-gray-500">Active Menu Items</div>
+                        </div>
+                    </div>
+
+                    <h2 class="text-2xl font-semibold brand-color mt-10 mb-6">Recent Orders</h2>
+                    <div class="manager-card">
+                         <div class="data-header grid grid-cols-12 font-bold py-3 px-4 rounded-t-lg text-sm text-gray-600">
+                            <div class="col-span-3">Order ID (User ID)</div>
+                            <div class="col-span-4">Items Summary</div>
+                            <div class="col-span-2">Status</div>
+                            <div class="col-span-1 text-right">Total</div>
+                            <div class="col-span-2 text-center">Actions</div>
+                        </div>
+                        <div id="dashboard-orders-list" class="divide-y divide-gray-200">
+                            <p class="text-gray-500 p-4">Loading recent orders...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Area for Menu Management -->
+                <div id="menu-content" class="manager-content hidden space-y-8">
+                    <h2 class="text-2xl font-semibold brand-color mb-6">Menu Management</h2>
+                    
+                    <!-- Add/Edit Menu Item Form -->
+                    <div class="manager-card">
+                        <h3 class="text-xl font-medium mb-4" id="menu-form-title">Add New Menu Item</h3>
+                        <form id="menu-item-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="hidden" id="menu-item-id">
+                            <input type="text" id="menu-name" placeholder="Name" required class="col-span-1 p-2 border rounded-lg">
+                            <input type="number" id="menu-price" step="0.01" placeholder="Price (e.g. 12.99)" required class="col-span-1 p-2 border rounded-lg">
+                            <input type="text" id="menu-category" placeholder="Category (e.g. Mains, Sides)" required class="col-span-1 p-2 border rounded-lg">
+                            <textarea id="menu-description" placeholder="Description" required class="md:col-span-3 p-2 border rounded-lg"></textarea>
+                            <div class="md:col-span-3 flex items-center space-x-4">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="menu-active" checked class="rounded brand-color focus:ring-brand-color">
+                                    <span class="text-gray-700">Active on Menu</span>
+                                </label>
+                                <button type="submit" class="bg-brand-primary text-white py-2 px-4 rounded-lg font-medium hover:bg-red-800 transition duration-150">
+                                    <i class="ph ph-plus-circle mr-1"></i> Save Item
+                                </button>
+                                <button type="button" id="menu-cancel-button" class="hidden text-gray-500 hover:text-gray-700 transition duration-150" onclick="resetMenuForm()">
+                                    Cancel Edit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Menu Item List -->
+                    <div class="manager-card">
+                        <div class="data-header grid grid-cols-12 font-bold py-3 px-4 rounded-t-lg text-sm text-gray-600">
+                            <div class="col-span-3">Item Name</div>
+                            <div class="col-span-5 hidden sm:block">Description</div>
+                            <div class="col-span-2">Category</div>
+                            <div class="col-span-1 text-right">Price</div>
+                            <div class="col-span-1 text-center">Status</div>
+                        </div>
+                        <div id="menu-items-list" class="divide-y divide-gray-200">
+                            <!-- Menu items will be inserted here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Area for Orders -->
+                <div id="orders-content" class="manager-content hidden space-y-8">
+                    <h2 class="text-2xl font-semibold brand-color mb-6">Recent Orders (<span id="current-role-display">Manager</span> View)</h2>
+                    <div class="manager-card">
+                        <div class="data-header grid grid-cols-12 font-bold py-3 px-4 rounded-t-lg text-sm text-gray-600">
+                            <div class="col-span-3">Order ID (User ID)</div>
+                            <div class="col-span-4">Items Summary</div>
+                            <div class="col-span-2">Status</div>
+                            <div class="col-span-1 text-right">Total</div>
+                            <div class="col-span-2 text-center">Actions</div>
+                        </div>
+                        <div id="orders-list" class="divide-y divide-gray-200">
+                            <!-- Orders will be inserted here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Confirm/Message (Replaces alert/confirm) -->
+    <div id="custom-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm">
+            <h3 id="modal-title" class="text-lg font-bold text-gray-800 mb-3"></h3>
+            <p id="modal-message" class="text-gray-600 mb-6"></p>
+            <div id="modal-actions" class="flex justify-end space-x-3">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // --- Global State and Constants ---
+        let currentUserId = null;
+        let currentRole = 'Manager'; // Default role for authenticated user view
+        
+        // Expose mock data arrays globally so the Customer App can also use them (simulating shared MySQL)
+        window.mockMenuItems = []; 
+        window.mockOrders = [];
+        window.dataSubscribers = []; // Used to simulate real-time updates
+
+        const MOCK_CREDENTIALS = {
+            'manager@awana.com': { password: '123456', userId: 'MANAGER_001' },
+            'delivery@awana.com': { password: '123456', userId: 'DELIVERY_001' },
+        };
+        
+        // --- Mock Database / Backend Simulation ---
+        
+        window.initMockData = function() {
+            // Initial Menu Items
+            window.mockMenuItems = [
+                { id: 'm1', name: 'Chicken Noodles', price: 1000.00, description: 'Stir-fried noodles tossed with tender chicken strips, fresh vegetables, and savory sauces. A perfect balance of flavor and texture, served hot and satisfying every bite.', category: 'Main Dishes', active: true, timestamp: Date.now() - 300000 },
+                { id: 'm2', name: 'Sweet and Sour Chiken Noodles', price: 1200.00, description: 'A delightful blend of tangy sweetness and rich savory flavor. Comes with crispy chicken, peppers, pineapples, and a vibrant sweet and sour glaze.', category: 'Main Dishes', active: true, timestamp: Date.now() - 200000 },
+                { id: 'm3', name: 'Egg Noodles', price: 900.00, description: 'Simple, classic egg noodles stir-fried to perfection with fresh shredded cabbage, carrots, and spring onions. A light and flavorful meal.', category: 'Main Dishes', active: true, timestamp: Date.now() - 100000 },
+                { id: 'm4', name: 'Cheese and Garlic Noodles', price: 1400.00, description: 'Creamy, decadent noodles smothered in a rich white sauce infused with fresh garlic, three types of melted cheese, and a sprinkle of herbs.', category: 'Drinks', active: false, timestamp: Date.now() - 50000 },
+                
+            ];
+            
+            // Initial Orders
+            window.mockOrders = [
+                // Pending order for Manager to action (Accept/Reject)
+                { id: 'o101', items: [{ name: "Chicken Noodles", qty: 1 }], total: 1000.00, status: 'Pending', userId: 'user-001', timestamp: Date.now() - 3600000 },
+                // Accepted order for Delivery Staff to action (Picked up)
+                { id: 'o102', items: [{ name: "Sweet and Sour Chiken Noodles", qty: 2 }, { name: "Egg Noodles", qty: 1 }], total: 3300.00, status: 'Accepted', userId: 'user-002', timestamp: Date.now() - 600000 },
+                // Picked up order for Delivery Staff to action (On the way)
+                { id: 'o103', items: [{ name: "Egg Noodles", qty: 1 }], total: 900.00, status: 'Picked up', userId: 'user-003', timestamp: Date.now() - 120000 },
+                // Distributed (Completed) order
+                { id: 'o104', items: [{ name: "Cheese and Garlic Noodles", qty: 3 }], total: 4200.00, status: 'Distributed', userId: 'user-004', timestamp: Date.now() - 7200000 }
+            ];
+        }
+
+        /** Notifies all subscribers to re-render data. Simulates real-time updates. */
+        function notifySubscribers() {
+            window.dataSubscribers.forEach(subscriber => subscriber());
+        }
+
+        // --- Mock Data Service Functions ---
+
+        async function mockFetchMenuItems() {
+            return new Promise(resolve => setTimeout(() => resolve(window.mockMenuItems), 100));
+        }
+
+        async function mockSaveMenuItem(itemData) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            if (itemData.id) {
+                // Update existing item
+                const index = window.mockMenuItems.findIndex(item => item.id === itemData.id);
+                if (index !== -1) {
+                    window.mockMenuItems[index] = { ...window.mockMenuItems[index], ...itemData, timestamp: Date.now() };
+                }
+            } else {
+                // Add new item
+                const newId = 'm' + (window.mockMenuItems.length + 1).toString().padStart(2, '0');
+                window.mockMenuItems.push({ ...itemData, id: newId, timestamp: Date.now() });
+            }
+            notifySubscribers();
+        }
+
+        async function mockDeleteMenuItem(id) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            window.mockMenuItems = window.mockMenuItems.filter(item => item.id !== id);
+            notifySubscribers();
+        }
+        
+        async function mockFetchOrders() {
+            return new Promise(resolve => setTimeout(() => resolve(window.mockOrders), 100));
+        }
+        
+        async function mockUpdateOrderStatus(orderId, newStatus) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            const order = window.mockOrders.find(o => o.id === orderId);
+            if (order) {
+                order.status = newStatus;
+                order.updatedAt = Date.now();
+                notifySubscribers();
+                return true;
+            }
+            return false;
+        }
+
+        // --- Utility Functions (Modal) ---
+
+        /** Shows the custom modal with dynamic content and buttons. */
+        function showModal(title, message, actions) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').innerHTML = message; // Use innerHTML to allow for bold text
+            const actionsContainer = document.getElementById('modal-actions');
+            actionsContainer.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = document.createElement('button');
+                button.textContent = action.text;
+                const baseStyle = 'py-2 px-4 rounded-lg font-medium transition duration-150';
+                button.className = `${baseStyle} ${action.style}`;
+                button.onclick = () => {
+                    document.getElementById('custom-modal').classList.add('hidden');
+                    document.getElementById('custom-modal').classList.remove('flex');
+                    if (action.callback) action.callback();
+                };
+                actionsContainer.appendChild(button);
+            });
+
+            document.getElementById('custom-modal').classList.remove('hidden');
+            document.getElementById('custom-modal').classList.add('flex');
+        }
+
+        // --- Navigation and UI Functions ---
+
+        function navigateTo(pageId) {
+            document.getElementById('auth-page').classList.add('hidden');
+            document.getElementById('manager-page').classList.add('hidden');
+
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                
+                if (pageId === 'manager-page') {
+                    targetPage.classList.remove('flex-col');
+                    targetPage.classList.add('flex');
+                    // Ensure the initial content view is set on login
+                    const dashboardLink = document.querySelector('.sidebar-link[data-target="dashboard-content"]');
+                    if (dashboardLink) dashboardLink.click();
+                } else {
+                    targetPage.classList.add('flex-col', 'flex');
+                }
+            } else {
+                console.error("Navigation error: Page ID not found", pageId);
+                navigateTo('auth-page'); // Fallback
+            }
+        }
+
+        // --- Authentication Logic (Mocked) ---
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const messageEl = document.getElementById('auth-message');
+            messageEl.textContent = 'Logging in...';
+
+            const userEntry = MOCK_CREDENTIALS[email];
+            
+            if (userEntry && userEntry.password === password) {
+                currentUserId = userEntry.userId;
+                document.getElementById('user-id-display').textContent = currentUserId;
+                messageEl.textContent = 'Login successful!';
+                
+                // Set the initial role based on login email
+                if (email.includes('delivery')) {
+                     currentRole = 'Delivery';
+                     document.getElementById('role-toggle').value = 'Delivery';
+                } else {
+                     currentRole = 'Manager';
+                     document.getElementById('role-toggle').value = 'Manager';
+                }
+                
+                navigateTo('manager-page');
+            } else {
+                messageEl.textContent = 'Login failed: Invalid email or password.';
+                currentUserId = null;
+                console.error("Mock Login failed.");
+            }
+        });
+        
+        document.getElementById('logout-button').addEventListener('click', () => {
+            currentUserId = null;
+            navigateTo('auth-page');
+        });
+
+
+        // --- Manager/Staff UI and Routing Logic ---
+        
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = e.currentTarget.getAttribute('data-target');
+
+                // Update active link class
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+
+                // Show/Hide content
+                document.querySelectorAll('.manager-content').forEach(content => content.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+                
+                // If navigating to orders, ensure role display is correct
+                if (targetId === 'orders-content') {
+                    document.getElementById('current-role-display').textContent = currentRole;
+                    renderOrders(); // Force immediate re-render on tab change
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleToggleEl = document.getElementById('role-toggle');
+            if (roleToggleEl) {
+                roleToggleEl.addEventListener('change', (e) => {
+                    currentRole = e.target.value;
+                    document.getElementById('current-role-display').textContent = currentRole;
+                    // Force re-render of orders list with new role permissions
+                    if (!document.getElementById('orders-content').classList.contains('hidden')) {
+                        renderOrders();
+                    }
+                });
+            }
+        });
+        
+        // --- Menu Management (UI Rendering) ---
+
+        function renderMenuItem(item) {
+            const statusClass = item.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+
+            const itemEl = document.createElement('div');
+            itemEl.className = 'grid grid-cols-12 items-center py-3 px-4 hover:bg-gray-50 transition duration-100 text-sm';
+            itemEl.innerHTML = `
+                <div class="col-span-3 font-medium text-gray-900 truncate">${item.name}</div>
+                <div class="col-span-5 hidden sm:block text-gray-600 truncate">${item.description}</div>
+                <div class="col-span-2 text-gray-600">${item.category}</div>
+                <div class="col-span-1 text-right font-semibold">$${item.price.toFixed(2)}</div>
+                <div class="col-span-1 text-center">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${item.active ? 'Active' : 'Hidden'}</span>
+                </div>
+                <div class="col-span-1 flex justify-center space-x-2">
+                    <button onclick="editMenuItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.description.replace(/'/g, "\\'")}', '${item.category.replace(/'/g, "\\'")}', ${item.active})" title="Edit" class="text-blue-500 hover:text-blue-700">
+                        <i class="ph ph-pencil-simple text-lg"></i>
+                    </button>
+                    <button onclick="deleteMenuItemConfirmed('${item.id}', '${item.name.replace(/'/g, "\\'")}')" title="Delete" class="text-red-500 hover:text-red-700">
+                        <i class="ph ph-trash-simple text-lg"></i>
+                    </button>
+                </div>
+            `;
+            return itemEl;
+        }
+        
+        function renderMenuItems() {
+            const listEl = document.getElementById('menu-items-list');
+
+    // --- EARLY RETURN: don't re-render when Menu Management tab is hidden ---
+    const menuContent = document.getElementById('menu-content');
+    if (menuContent && menuContent.classList.contains('hidden')) return;
+
+    listEl.innerHTML = '';
+    let activeCount = 0;
+    
+    mockFetchMenuItems().then(items => {
+        items.forEach(item => {
+            if (item.active) activeCount++;
+            listEl.appendChild(renderMenuItem(item));
+        });
+        document.getElementById('active-menu-items').textContent = activeCount;
+    }).catch(e => {
+         listEl.innerHTML = `<p class="p-4 text-red-500">Error fetching menu: ${e.message}</p>`;
+    });
+        }
+
+        window.editMenuItem = (id, name, price, description, category, active) => {
+            document.getElementById('menu-item-id').value = id;
+            document.getElementById('menu-name').value = name;
+            document.getElementById('menu-price').value = price;
+            document.getElementById('menu-description').value = description;
+            document.getElementById('menu-category').value = category;
+            document.getElementById('menu-active').checked = active;
+            document.getElementById('menu-form-title').textContent = `Edit Menu Item: ${name}`;
+            document.getElementById('menu-cancel-button').classList.remove('hidden');
+        };
+
+        window.resetMenuForm = () => {
+            document.getElementById('menu-item-id').value = '';
+            document.getElementById('menu-item-form').reset();
+            document.getElementById('menu-form-title').textContent = 'Add New Menu Item';
+            document.getElementById('menu-cancel-button').classList.add('hidden');
+            document.getElementById('menu-active').checked = true; // Default to active
+        };
+
+        window.deleteMenuItemConfirmed = (id, name) => {
+            showModal('Confirm Deletion', `Are you sure you want to delete the menu item: "${name}"? This action cannot be undone.`, [
+                { text: 'Cancel', style: 'bg-gray-200 text-gray-800' },
+                { text: 'Delete', style: 'bg-red-600 text-white hover:bg-red-700', callback: async () => {
+                    try {
+                        await mockDeleteMenuItem(id);
+                        showModal('Success', `${name} has been successfully deleted.`, [{ text: 'OK', style: 'bg-brand-primary text-white' }]);
+                    } catch (e) {
+                        console.error("Error deleting item: ", e);
+                        showModal('Error', `Failed to delete item: ${e.message}`, [{ text: 'Close', style: 'bg-gray-200 text-gray-800' }]);
+                    }
+                }}
+            ]);
+        };
+
+        document.getElementById('menu-item-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('menu-item-id').value || null;
+            const name = document.getElementById('menu-name').value;
+            const price = parseFloat(document.getElementById('menu-price').value);
+            const description = document.getElementById('menu-description').value;
+            const category = document.getElementById('menu-category').value;
+            const active = document.getElementById('menu-active').checked;
+
+            const itemData = { id, name, price, description, category, active };
+
+            try {
+                await mockSaveMenuItem(itemData);
+                const action = id ? 'updated' : 'added';
+                showModal('Success', `${name} ${action} successfully!`, [{ text: 'Great!', style: 'bg-brand-primary text-white' }]);
+                resetMenuForm();
+            } catch (e) {
+                console.error("Error saving document: ", e);
+                showModal('Error', `Failed to save item: ${e.message}`, [{ text: 'Close', style: 'bg-gray-200 text-gray-800' }]);
+            }
+        });
+
+
+        // --- Orders Management (UI Rendering) ---
+
+        // Helper function to render action buttons based on role and status
+        function renderOrderActions(order) {
+            const orderId = order.id;
+            const actions = [];
+            
+            if (currentRole === 'Manager') {
+                switch (order.status) {
+                    case 'Pending':
+                        actions.push(`
+                            <button onclick="updateOrderStatusConfirmed('${orderId}', 'Accepted')" title="Accept Order" class="text-green-500 hover:text-green-700">
+                                <i class="ph ph-check-circle text-xl"></i>
+                            </button>
+                            <button onclick="updateOrderStatusConfirmed('${orderId}', 'Rejected')" title="Reject Order" class="text-red-500 hover:text-red-700">
+                                <i class="ph ph-x-circle text-xl"></i>
+                            </button>
+                        `);
+                        break;
+                    case 'Accepted':
+                    case 'Preparing':
+                        actions.push(`
+                            <button onclick="updateOrderStatusConfirmed('${orderId}', 'Picked up')" title="Order Ready for Delivery" class="text-blue-500 hover:text-blue-700">
+                                <i class="ph ph-package text-xl"></i>
+                            </button>
+                        `);
+                        break;
+                    // Other statuses require no manager action
+                }
+            } else if (currentRole === 'Delivery') {
+                switch (order.status) {
+                    case 'Accepted':
+                    case 'Preparing':
+                        actions.push(`
+                            <button onclick="updateOrderStatusConfirmed('${orderId}', 'Picked up')" title="Picked Up by Delivery" class="text-yellow-500 hover:text-yellow-700">
+                                <i class="ph ph-hand-tap text-xl"></i>
+                            </button>
+                        `);
+                        break;
+                    case 'Picked up':
+                        actions.push(`
+                            <button onclick="updateOrderStatusConfirmed('${orderId}', 'On the way')" title="On the Way" class="text-blue-500 hover:text-blue-700">
+                                <i class="ph ph-map-trifold text-xl"></i>
+                            </button>
+                        `);
+                        break;
+                    case 'On the way':
+                        actions.push(`
+                            <button onclick="updateOrderStatusConfirmed('${orderId}', 'Distributed')" title="Distributed / Delivered" class="text-green-500 hover:text-green-700">
+                                <i class="ph ph-flag-checkered text-xl"></i>
+                            </button>
+                        `);
+                        break;
+                    // Other statuses require no delivery action
+                }
+            }
+            
+            // Fallback if no actions are available (e.g., Distributed, Rejected)
+            if (actions.length === 0) {
+                return '<span class="text-gray-400">No actions</span>';
+            }
+            
+            return actions.join('');
+        }
+
+
+        function renderOrderItem(order) {
+            const statusColors = {
+                'Pending': 'bg-yellow-100 text-yellow-800',
+                'Accepted': 'bg-blue-100 text-blue-800',
+                'Preparing': 'bg-indigo-100 text-indigo-800',
+                'Picked up': 'bg-purple-100 text-purple-800',
+                'On the way': 'bg-teal-100 text-teal-800',
+                'Distributed': 'bg-green-100 text-green-800',
+                'Rejected': 'bg-red-100 text-red-800',
+            };
+
+            const statusClass = statusColors[order.status] || 'bg-gray-100 text-gray-800';
+            const summary = order.items.map(item => `${item.qty}x ${item.name}`).join(', ');
+
+            const itemEl = document.createElement('div');
+            itemEl.className = 'grid grid-cols-12 items-center py-3 px-4 hover:bg-gray-50 transition duration-100 text-sm';
+            itemEl.innerHTML = `
+                <div class="col-span-3 font-medium text-gray-900 truncate" title="User ID: ${order.userId}">Order ${order.id.substring(0, 8)}...</div>
+                <div class="col-span-4 text-gray-600 truncate">${summary}</div>
+                <div class="col-span-2">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${order.status}</span>
+                </div>
+                <div class="col-span-1 text-right font-semibold">$${order.total.toFixed(2)}</div>
+                <div class="col-span-2 flex justify-center space-x-2">
+                    ${renderOrderActions(order)}
+                </div>
+            `;
+            return itemEl;
+        }
+        
+        function renderOrders() {
+            mockFetchOrders().then(orders => {
+                const listEl = document.getElementById('orders-list');
+                const dashboardListEl = document.getElementById('dashboard-orders-list');
+                
+                // Sort orders by timestamp descending so most recent are first
+                const sortedOrders = [...orders].sort((a, b) => b.timestamp - a.timestamp);
+                
+                listEl.innerHTML = '';
+                dashboardListEl.innerHTML = '';
+                let totalOrders = 0;
+                let totalRevenue = 0.00;
+
+                sortedOrders.forEach(order => {
+                    // Render for the main Orders tab
+                    listEl.appendChild(renderOrderItem(order));
+                    
+                    // Render for the Dashboard (show only 3 recent)
+                    if (dashboardListEl.children.length < 3) {
+                         dashboardListEl.appendChild(renderOrderItem(order));
+                    }
+                    
+                    // Update Dashboard Stats (assuming "Today" is within the last 24 hours)
+                    if (order.timestamp > Date.now() - 86400000) {
+                        totalOrders++;
+                        if (order.status === 'Distributed') {
+                             totalRevenue += order.total;
+                        }
+                    }
+                });
+                
+                // Update Dashboard Stats
+                document.getElementById('total-orders').textContent = totalOrders;
+                document.getElementById('total-revenue').textContent = `$${totalRevenue.toFixed(2)}`;
+                
+            }).catch(e => {
+                document.getElementById('orders-list').innerHTML = `<p class="p-4 text-red-500">Error fetching orders: ${e.message}</p>`;
+                document.getElementById('dashboard-orders-list').innerHTML = `<p class="p-4 text-red-500">Error fetching orders: ${e.message}</p>`;
+            });
+        }
+        
+        window.updateOrderStatusConfirmed = (orderId, newStatus) => {
+            const verb = newStatus === 'Rejected' ? 'reject' : 'update';
+            showModal('Confirm Action', `Are you sure you want to **${verb}** Order ${orderId} to status: **${newStatus}**?`, [
+                { text: 'Cancel', style: 'bg-gray-200 text-gray-800' },
+                { text: 'Confirm', style: 'bg-green-600 text-white hover:bg-green-700', callback: async () => {
+                    try {
+                        await mockUpdateOrderStatus(orderId, newStatus);
+                        showModal('Status Updated', `Order ${orderId} status updated to **${newStatus}**.`, [{ text: 'OK', style: 'bg-brand-primary text-white' }]);
+                    } catch (e) {
+                         showModal('Update Error', `Failed to update status: ${e.message}`, [{ text: 'Close', style: 'bg-gray-200 text-gray-800' }]);
+                    }
+                }}
+            ]);
+        };
+
+
+        // --- App Initialization ---
+        
+        function setupDataListeners() {
+            // Add render functions to the subscribers list to simulate real-time updates
+            window.dataSubscribers.push(renderMenuItems);
+            window.dataSubscribers.push(renderOrders);
+            
+            // Initial render
+            renderMenuItems();
+            renderOrders();
+        }
+
+        window.onload = function() {
+            window.initMockData();
+            setupDataListeners();
+            // Start on the auth page
+            navigateTo('auth-page');
+            
+            // Set up a continuous polling loop to simulate real-time updates for the Customer App
+            // This ensures if the Customer App updates the mockOrders array, this app sees it.
+            setInterval(notifySubscribers, 2000); 
+        };
+
+    </script>
+</body>
+</html>

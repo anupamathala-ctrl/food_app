@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Checkout Flow</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .logo-text {
+           
+            color: #9B2341; 
+            font-size: 6rem;
+            font-weight: 800; 
+            line-height: 0.8; 
+        }
+        .tagline {
+            color: #555;
+            letter-spacing: 0.15em;
+        }
+        .category-button {
+            width: 100px; 
+            height: 100px; 
+            flex-shrink: 0;
+            background-color: #F2E9E6; 
+            transition: transform 0.15s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); /* Default shadow */
+        }
+        .category-button:active {
+            transform: scale(0.95);
+        }
+        
+        #home-header-bg {
+             background-color: #D6C2BB; 
+             border-bottom-left-radius: 40px;
+             border-bottom-right-radius: 40px;
+        }
+        
+        #item-detail-modal-content {
+            
+            max-height: 90vh; 
+        }
+        
+        
+        .bill-payment-bg {
+             background-color: #F2E9E6; 
+        }
+
+        .bill-card {
+            background-color: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-option {
+            padding: 16px 0;
+            border-bottom: 1px solid #E5E7EB;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+        .payment-option:last-child {
+            border-bottom: none;
+        }
+        .payment-option:hover {
+            background-color: #F9FAFB;
+        }
+
+        .payment-input {
+            width: 100%;
+            padding: 1.5rem 1rem;
+            margin-top: 0.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            font-size: 1.125rem;
+            color: #374151;
+            transition: ring-color 0.2s;
+        }
+        .payment-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(155, 35, 65, 0.5); 
+        }
+
+    </style>
+    <script>
+        
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        
+                        'app-bg': '#F2E9E6',
+                        
+                        'brand-primary': '#9B2341', 
+                        
+                        'button-default': '#BFA799',
+                        
+                        'card-bg': '#FFF', 
+                        
+                        'star-gold': '#FFD700',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-app-bg min-h-screen flex flex-col items-center justify-start">
+
+    
+    <div id="app-container" class="w-full mx-auto flex flex-col items-center justify-start">
+
+        <!-- 1. Splash Page (Default View) -->
+        <div id="splash-page" class="app-page w-full max-w-sm hidden mt-12">
+             <div class="mb-12 text-center pt-8">
+                <span class="logo-text">awana</span>
+                <span class="text-brand-primary font-serif font-bold text-3xl align-top">RE</span><span class="text-brand-primary font-serif font-bold text-sm align-top">STURANT</span>
+                <p class="tagline text-sm mt-4 uppercase">Savor the art of fine dining.</p>
+            </div>
+            <button id="splash-login-btn" class="w-full py-4 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-button-default hover:bg-[#a99184] text-white mb-6">
+                Log In
+            </button>
+            <button id="splash-signup-btn" class="w-full py-4 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-button-default hover:bg-[#a99184] text-white">
+                Sign Up
+            </button>
+        </div>
+
+        <!-- 2. Register Page -->
+        <div id="register-page" class="app-page w-full max-w-sm hidden">
+             <div class="mb-12 text-center pt-8">
+                <span class="logo-text">awana</span>
+                <span class="text-brand-primary font-serif font-bold text-3xl align-top">RE</span><span class="text-brand-primary font-serif font-bold text-sm align-top">STURANT</span>
+                <p class="tagline text-sm mt-4 uppercase">Savor the art of fine dining.</p>
+            </div>
+            <form id="register-form" class="space-y-6">
+                
+                <div>
+                    <label for="firstName" class="text-lg font-semibold text-gray-700">First Name</label>
+                    <input type="text" id="firstName" class="w-full p-4 mt-2 rounded-xl border-none shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary" placeholder="">
+                </div>
+                <div>
+                    <label for="lastName" class="text-lg font-semibold text-gray-700">Last Name</label>
+                    <input type="text" id="lastName" class="w-full p-4 mt-2 rounded-xl border-none shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary" placeholder="">
+                </div>
+                <div>
+                    <label for="phone" class="text-lg font-semibold text-gray-700">Phone Number</label>
+                    <input type="tel" id="phone" class="w-full p-4 mt-2 rounded-xl border-none shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary" placeholder="">
+                </div>
+                <div>
+                    <label for="email" class="text-lg font-semibold text-gray-700">Email Address</label>
+                    <input type="email" id="email" class="w-full p-4 mt-2 rounded-xl border-none shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary" placeholder="">
+                </div>
+                <div>
+                    <label for="password" class="text-lg font-semibold text-gray-700">Password</label>
+                    <input type="password" id="password" class="w-full p-4 mt-2 rounded-xl border-none shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary" placeholder="">
+                </div>
+                <div>
+                    <label for="confirmPassword" class="text-lg font-semibold text-gray-700">Confirm Password</label>
+                    <input type="password" id="confirmPassword" class="w-full p-4 mt-2 rounded-xl border-none shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary" placeholder="">
+                </div>
+            </form>
+            
+            <button id="register-button" class="w-full py-4 mt-10 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-button-default text-white">
+                Register
+            </button>
+            <p class="text-center text-sm mt-4 text-gray-600 cursor-pointer hover:underline" onclick="showPage('splash')">
+                &larr; Back to Login/Register
+            </p>
+        </div>
+
+        <!-- 3. Login Page -->
+        <div id="login-page" class="app-page w-full max-w-sm hidden">
+             <div class="mb-12 text-center pt-8">
+                <span class="logo-text">awana</span>
+                <span class="text-brand-primary font-serif font-bold text-3xl align-top">RE</span><span class="text-brand-primary font-serif font-bold text-sm align-top">STURANT</span>
+                <p class="tagline text-sm mt-4 uppercase">Savor the art of fine dining.</p>
+            </div>
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="login-email" class="text-lg font-semibold text-gray-700">Email Address</label>
+                    <input type="email" id="login-email" class="w-full p-4 mt-2 rounded-xl border-none shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary" placeholder="">
+                </div>
+                <div>
+                    <label for="login-password" class="text-lg font-semibold text-gray-700">Password</label>
+                    <input type="password" id="login-password" class="w-full p-4 mt-2 rounded-xl border-none shadow-md focus:outline-none focus:ring-2 focus:ring-brand-primary" placeholder="">
+                </div>
+            </form>
+
+            <button id="login-button" class="w-full py-4 mt-10 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-button-default hover:bg-brand-primary text-white">
+                Log In
+            </button>
+            <p class="text-center text-sm mt-4 text-gray-600 cursor-pointer hover:underline" onclick="showPage('splash')">
+                &larr; Back to Login/Register
+            </p>
+        </div>
+        
+        <!-- 4. Branch Selection Page -->
+        <div id="branch-page" class="app-page w-full max-w-sm hidden mt-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">
+                Choose our branch near you!
+            </h2>
+            <div class="space-y-4 w-full">
+                
+                <button class="branch-btn w-full py-4 text-xl font-semibold rounded-xl shadow-lg bg-brand-primary hover:opacity-90 transition-opacity text-white">Kandy</button>
+                <button class="branch-btn w-full py-4 text-xl font-semibold rounded-xl shadow-lg bg-brand-primary hover:opacity-90 transition-opacity text-white">Galle</button>
+                <button class="branch-btn w-full py-4 text-xl font-semibold rounded-xl shadow-lg bg-brand-primary hover:opacity-90 transition-opacity text-white">Kalutara</button>
+                <button class="branch-btn w-full py-4 text-xl font-semibold rounded-xl shadow-lg bg-brand-primary hover:opacity-90 transition-opacity text-white">Colombo</button>
+                <button class="branch-btn w-full py-4 text-xl font-semibold rounded-xl shadow-lg bg-brand-primary hover:opacity-90 transition-opacity text-white">Ratnapura</button>
+                <button class="branch-btn w-full py-4 text-xl font-semibold rounded-xl shadow-lg bg-brand-primary hover:opacity-90 transition-opacity text-white">Aluthgama</button>
+                <button class="branch-btn w-full py-4 text-xl font-semibold rounded-xl shadow-lg bg-brand-primary hover:opacity-90 transition-opacity text-white">Moratuwa</button>
+            </div>
+            <p class="text-center text-sm mt-8 text-gray-600 cursor-pointer hover:underline" onclick="showPage('splash')">
+                &larr; Back to Login/Register
+            </p>
+        </div>
+
+        <!-- 5. Home Page (Menu View) -->
+        <div id="home-page" class="app-page w-full flex flex-col hidden min-h-screen pb-4">
+            
+            
+            <div id="home-header-bg" class="w-full pt-6 pb-4 px-4 sticky top-0 z-10">
+                <div class="flex justify-between items-center mb-6">
+                    
+                    <div class="flex items-end">
+                        <span class="text-brand-primary font-extrabold text-5xl leading-none" style="font-family:serif;">awana</span>
+                        <span class="text-brand-primary font-bold text-sm ml-1 mb-1">RESTAURANT</span>
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                        <button id="track-order-btn" type="button" class="bg-brand-primary p-3 rounded-xl shadow-lg cursor-pointer hover:opacity-90 transition-opacity relative m-0 z-10">
+                            <i class="fas fa-box text-white text-xl"></i>
+                        </button>
+
+                         
+                        <button id="cart-icon" type="button" class="bg-brand-primary p-3 rounded-xl shadow-lg cursor-pointer hover:opacity-90 transition-opacity relative z-20">
+                            <i class="fas fa-shopping-cart text-white text-xl"></i>
+                            <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center opacity-0 transition-opacity duration-300">0</span>
+                       </button>
+                   </div>
+                </div>
+
+               
+                <div class="flex space-x-4 overflow-x-scroll pb-2 mt-4">
+                    
+                    <div class="category-button rounded-xl flex flex-col items-center justify-center p-2 shadow-md hover:shadow-lg">
+                        <img src="image/main dish.jpg" onerror="this.onerror=null;this.src='https://placehold.co/40x40/BFA799/FFF?text=🍜';" class="rounded-full w-10 h-10 mb-1" alt="Main Dishes Icon">
+                        <span class="text-xs font-semibold text-gray-800 text-center leading-tight">Main Dishes</span>
+                    </div>
+                     <div class="category-button rounded-xl flex flex-col items-center justify-center p-2 shadow-md hover:shadow-lg">
+                        <img src="image/bev.webp" onerror="this.onerror=null;this.src='https://placehold.co/40x40/9B2341/FFF?text=🍹';" class="rounded-full w-10 h-10 mb-1" alt="Beverages Icon">
+                        <span class="text-xs font-semibold text-gray-800 text-center leading-tight">Beverages</span>
+                    </div>
+                     <div class="category-button rounded-xl flex flex-col items-center justify-center p-2 shadow-md hover:shadow-lg">
+                        <img src="image/cheese cake.jpg" onerror="this.onerror=null;this.src='https://placehold.co/40x40/BFA799/FFF?text=🍰';" class="rounded-full w-10 h-10 mb-1" alt="Desserts Icon">
+                        <span class="text-xs font-semibold text-gray-800 text-center leading-tight">Desserts</span>
+                    </div>
+                     <div class="category-button rounded-xl flex flex-col items-center justify-center p-2 shadow-md hover:shadow-lg">
+                        <img src="image/sh.jpg" onerror="this.onerror=null;this.src='https://placehold.co/40x40/9B2341/FFF?text=🍟';" class="rounded-full w-10 h-10 mb-1" alt="Short Eats Icon">
+                        <span class="text-xs font-semibold text-gray-800 text-center leading-tight">Short Eats</span>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="menu-list-container" class="p-4 space-y-6 flex-grow w-full">
+                
+            </div>
+        </div>
+
+        <!-- 6. Cart Page -->
+        <div id="cart-page" class="app-page w-full flex flex-col hidden min-h-screen px-6 py-8">
+            <div class="flex items-center mb-8">
+                <button onclick="showPage('home')" class="text-gray-800 hover:text-brand-primary transition-colors text-2xl mr-4">&larr;</button>
+                <h1 class="text-4xl font-extrabold text-gray-900">Cart</h1>
+            </div>
+
+            
+            <div id="cart-details-card" class="bg-white p-6 rounded-3xl shadow-xl w-full flex flex-col flex-grow mb-8">
+                
+                
+                <div id="cart-items-list" class="space-y-4 pb-4 border-b border-gray-200 flex-grow overflow-y-auto">
+                    
+                    <p id="empty-cart-message" class="text-center text-gray-500 italic py-12">Your cart is empty. Add some delicious food!</p>
+                </div>
+                
+                
+                <div id="cart-totals" class="pt-4 space-y-2">
+                    
+                    <div class="flex justify-between items-center text-lg font-medium text-gray-700">
+                        <span>Item Quantity:</span>
+                        <span id="cart-total-qty">0</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-2xl font-bold text-gray-900 pt-2 border-t border-gray-100">
+                        <span>Total:</span>
+                        <span>Rs. <span id="cart-grand-total">0.00</span></span>
+                    </div>
+                </div>
+            </div>
+
+            
+            <button id="confirm-order-btn" class="w-full py-4 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-brand-primary hover:opacity-90 text-white disabled:bg-button-default disabled:opacity-100" disabled>
+                Confirm Order
+            </button>
+        </div>
+
+        <!-- 7. Bill Details Page -->
+        <div id="bill-page" class="app-page w-full max-w-sm hidden pt-8 bill-payment-bg min-h-screen">
+            <div class="px-6 w-full">
+                <div class="flex items-center mb-8">
+                    <button onclick="showPage('cart')" class="text-gray-800 hover:text-brand-primary transition-colors text-2xl mr-4">&larr;</button>
+                    <h1 class="text-3xl font-extrabold text-gray-900">Bill Details</h1>
+                </div>
+
+                <div class="bill-card mb-12">
+                    
+                    <div id="bill-details-content">
+                        
+                    </div>
+
+                    
+                    <div class="space-y-4 pt-4 mt-4 border-t border-gray-300">
+                        <div class="flex justify-between items-center text-lg font-medium text-gray-700">
+                            <span>Delivery Fee</span>
+                            <span>Rs. <span id="bill-delivery-fee">150.00</span></span>
+                        </div>
+                         <div class="flex justify-between items-center text-2xl font-bold text-gray-900 pt-2 border-t border-gray-200">
+                            <span>Total</span>
+                            <span>Rs. <span id="bill-grand-total">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="proceed-to-pay-btn" class="w-full py-4 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-brand-primary hover:opacity-90 text-white">
+                    Proceed to Pay
+                </button>
+            </div>
+        </div>
+
+        <!-- 8. Payment Options Page -->
+        <div id="payment-page" class="app-page w-full max-w-sm hidden pt-8 bill-payment-bg min-h-screen">
+            <div class="px-6 w-full">
+                <div class="flex items-center mb-8">
+                    <button onclick="showPage('bill')" class="text-gray-800 hover:text-brand-primary transition-colors text-2xl mr-4">&larr;</button>
+                    <h1 class="text-3xl font-extrabold text-gray-900">Payment Options</h1>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-xl w-full p-6">
+                    
+                    <div class="payment-option flex justify-between items-center" data-payment="visa">
+                        <div class="flex items-center">
+                             
+                             <svg class="mr-3 w-10 h-6" viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg"><path d="M44.97 4.2C44.6.9 42.6.5 40.2.5H7.57C5.3.5 3.3.9 2.9 4.2 2.4 8.1 2.4 21.9 2.9 25.8c.3 3.3 2.3 3.7 4.67 3.7h32.63c2.37 0 4.37-.4 4.7-3.7.4-3.9.4-17.7 0-21.6z" fill="#000"/><path d="M42.8 19.4H30.8l1.4-9.3 10.6.1c1 0 1.4.3.4 2.2l-2.2 7zm-27.1-1.3l-1.4 7.5h-5.5l5.5-27.7 7.7 27.7h-5.9l-1.4-7.5zM34.8 19.4l-.8-2.6c-.6-2.1-1.4-4.2-2.3-6.1.1.2 2.3 8.7 2.3 8.7zM24.7 10.1h-2.5l-2.4 9.3h4.9l-.01-9.3z" fill="#fff"/><path d="M2.9 4.2C2.4 8.1 2.4 21.9 2.9 25.8c.3 3.3 2.3 3.7 4.67 3.7h32.63c2.37 0 4.37-.4 4.7-3.7.4-3.9.4-17.7 0-21.6.3-3.3-1.7-3.7-4.07-3.7H7.57C5.3.5 3.3.9 2.9 4.2z" fill="#fff" fill-opacity="0.05"/><path d="M15.7 18.1l-1.4 7.5h-5.5l5.5-27.7 7.7 27.7h-5.9l-1.4-7.5zm19.1-8.1c-.6-2.1-1.4-4.2-2.3-6.1.1.2 2.3 8.7 2.3 8.7h-1.4zM42.8 19.4H30.8l1.4-9.3 10.6.1c1 0 1.4.3.4 2.2l-2.2 7zm-18.1.01h-2.5l-2.4-9.3h4.9l-.01 9.3z" fill="#000" fill-opacity="0.1"/></svg>
+                             <span class="text-lg font-semibold text-gray-900">VISA</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-500"></i>
+                    </div>
+
+                    
+                    <div class="payment-option flex justify-between items-center" data-payment="mastercard">
+                        <div class="flex items-center">
+                            
+                            <svg class="mr-3 w-10 h-6" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><circle cx="187.7" cy="256" r="187.7" fill="#EB001B"/><circle cx="324.3" cy="256" r="187.7" fill="#F79E1B" opacity=".8"/><path d="M301.1 256c0 101.4-62.4 187.7-152.1 187.7-27.1 0-53.1-6.1-76.4-17.4C137.9 397.6 200.3 336.5 200.3 256c0-80.5-62.4-141.6-126.8-170.3 23.3-11.3 49.3-17.4 76.4-17.4 89.7 0 152.1 86.3 152.1 187.7z" fill="#FF5F00"/></svg>
+                            <span class="text-lg font-semibold text-gray-900">Master Card</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-500"></i>
+                    </div>
+
+                    
+                    <div class="payment-option flex justify-between items-center" data-payment="cod">
+                         <div class="flex items-center">
+                            <i class="fas fa-money-bill-wave text-2xl mr-4 text-green-600"></i>
+                            <span class="text-lg font-semibold text-gray-900">Cash on Delivery</span>
+                         </div>
+                        <i class="fas fa-chevron-right text-gray-500"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. Visa Payment Page (NEW) -->
+        <div id="visa-payment-page" class="app-page w-full max-w-sm hidden pt-8 bill-payment-bg min-h-screen">
+            <div class="px-6 w-full">
+                <div class="flex items-center mb-8">
+                    <button onclick="showPage('payment')" class="text-gray-800 hover:text-brand-primary transition-colors text-2xl mr-4">&larr;</button>
+                    <h1 class="text-3xl font-extrabold text-gray-900">Visa Payment</h1>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-xl w-full">
+                    <div class="flex items-center text-xl font-bold text-gray-900 mb-6">
+                        <span class="text-2xl mr-3 font-bold text-blue-800">VISA</span>
+                        Visa Card Details
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-lg font-semibold text-gray-700">Card Number</label>
+                            <input type="text" placeholder="XXXX XXXX XXXX XXXX" class="payment-input">
+                        </div>
+                        <div>
+                            <label class="text-lg font-semibold text-gray-700">Card Holder Name</label>
+                            <input type="text" placeholder="John Doe" class="payment-input">
+                        </div>
+                        <div class="flex space-x-4">
+                            <div class="flex-1">
+                                <label class="text-lg font-semibold text-gray-700">Expiry Date</label>
+                                <div class="flex items-center mt-2">
+                                    <input type="text" placeholder="MM" maxlength="2" class="payment-input text-center p-3">
+                                    <span class="text-2xl font-light mx-2">/</span>
+                                    <input type="text" placeholder="YY" maxlength="2" class="payment-input text-center p-3">
+                                </div>
+                            </div>
+                            <div class="w-1/3">
+                                <label class="text-lg font-semibold text-gray-700">CVV</label>
+                                <input type="text" placeholder="XXX" maxlength="3" class="payment-input text-center p-3 mt-2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="visa-enter-btn" class="w-full py-4 mt-10 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-brand-primary hover:opacity-90 text-white">
+                    Enter
+                </button>
+            </div>
+        </div>
+
+        <!-- 10. Master Card Payment Page (NEW) -->
+        <div id="mastercard-payment-page" class="app-page w-full max-w-sm hidden pt-8 bill-payment-bg min-h-screen">
+            <div class="px-6 w-full">
+                <div class="flex items-center mb-8">
+                    <button onclick="showPage('payment')" class="text-gray-800 hover:text-brand-primary transition-colors text-2xl mr-4">&larr;</button>
+                    <h1 class="text-3xl font-extrabold text-gray-900">Master Card Payment</h1>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-xl w-full">
+                    <div class="flex items-center text-xl font-bold text-gray-900 mb-6">
+                        <span class="text-2xl mr-3 font-bold text-red-700">MC</span>
+                        Master Card Details
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-lg font-semibold text-gray-700">Card Number</label>
+                            <input type="text" placeholder="XXXX XXXX XXXX XXXX" class="payment-input">
+                        </div>
+                        <div>
+                            <label class="text-lg font-semibold text-gray-700">Card Holder Name</label>
+                            <input type="text" placeholder="John Doe" class="payment-input">
+                        </div>
+                        <div class="flex space-x-4">
+                            <div class="flex-1">
+                                <label class="text-lg font-semibold text-gray-700">Expiry Date</label>
+                                <div class="flex items-center mt-2">
+                                    <input type="text" placeholder="MM" maxlength="2" class="payment-input text-center p-3">
+                                    <span class="text-2xl font-light mx-2">/</span>
+                                    <input type="text" placeholder="YY" maxlength="2" class="payment-input text-center p-3">
+                                </div>
+                            </div>
+                            <div class="w-1/3">
+                                <label class="text-lg font-semibold text-gray-700">CVV</label>
+                                <input type="text" placeholder="XXX" maxlength="3" class="payment-input text-center p-3 mt-2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="mastercard-enter-btn" class="w-full py-4 mt-10 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-brand-primary hover:opacity-90 text-white">
+                    Enter
+                </button>
+            </div>
+        </div>
+
+        <!-- 11. Address Page (NEW) -->
+        <div id="address-page" class="app-page w-full max-w-sm hidden pt-8 bill-payment-bg min-h-screen">
+            <div class="px-6 w-full">
+                <div class="flex items-center mb-8">
+                    
+                    <h1 class="text-3xl font-extrabold text-gray-900">Address</h1>
+                </div>
+
+                
+                <textarea id="delivery-address-input" rows="8" placeholder="Enter your delivery address here..." class="payment-input resize-none mb-8"></textarea>
+                
+                
+                <button id="use-current-location-btn" class="w-full py-4 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-brand-primary hover:opacity-90 text-white flex items-center justify-center space-x-3">
+                    <i class="fas fa-map-marker-alt text-2xl"></i>
+                    <span>Use current location</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                
+                <div id="location-result" class="mt-6 p-4 bg-white rounded-xl shadow-md hidden">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Location Coordinates:</p>
+                    <p id="coords-display" class="text-gray-900 text-sm"></p>
+                    <p id="map-link-container" class="mt-3 text-sm">
+                        <a id="google-map-link" href="#" target="_blank" class="text-blue-600 hover:underline font-medium">View on Google Maps</a>
+                    </p>
+                    <button id="confirm-location-btn" class="w-full py-2 mt-4 text-md font-semibold rounded-lg bg-green-500 hover:bg-green-600 text-white">
+                        Confirm Delivery Location
+                    </button>
+                </div>
+                <p id="location-error" class="mt-4 text-red-600 text-sm hidden">Error: Could not retrieve location.</p>
+
+                
+                <button id="confirm-address-order-btn" class="w-full py-4 mt-6 text-xl font-semibold rounded-xl shadow-lg transition-colors bg-brand-primary hover:opacity-90 text-white">
+                    Confirm Order
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    
+    <div id="custom-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-brand-primary">Alert</h3>
+            <p id="modal-message" class="text-gray-700 mb-6"></p>
+            <button id="close-modal-btn" class="w-full py-2 bg-brand-primary text-white rounded-lg hover:opacity-90">
+                Close
+            </button>
+        </div>
+    </div>
+
+    
+    <div id="item-detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50 transition-opacity duration-300">
+        
+        <div id="item-detail-modal-content" class="bg-white w-full max-w-lg md:max-w-xl rounded-t-3xl shadow-2xl flex flex-col overflow-y-auto transform transition-transform duration-300 translate-y-full">
+            
+            <div class="p-6 flex-grow">
+                
+                <div class="flex justify-end mb-4">
+                    <button id="close-item-detail-btn" class="text-gray-500 hover:text-gray-900 text-3xl font-light leading-none">
+                        &times;
+                    </button>
+                </div>
+                
+                
+                <h2 id="modal-item-title" class="text-3xl font-bold text-gray-900 text-center mb-6">Chicken Noodles</h2>
+                
+                
+                <img id="modal-item-image" src="" alt="Item Image" class="w-full h-auto rounded-xl object-cover mb-4 shadow-lg">
+
+                
+                <div class="flex justify-center items-center mb-6">
+                    <div id="modal-item-stars"></div>
+                    <span id="modal-item-ratings" class="text-sm text-gray-500 ml-3">12 ratings</span>
+                </div>
+                
+                
+                <p id="modal-item-description" class="text-base text-gray-700 text-center mb-8 px-2 leading-relaxed">
+                    Stir-fried noodles tossed with tender chicken strips, fresh vegetables, and savory sauces. A perfect balance of flavor and texture, served hot and satisfying every bite.
+                </p>
+                
+                
+                <p class="text-center text-lg font-bold text-gray-900">
+                    Price: Rs. <span id="modal-item-price">1000.00</span>
+                </p>
+            </div>
+
+            
+            <div class="sticky bottom-0 bg-white p-4 border-t border-gray-100 shadow-2xl">
+                <div class="flex justify-between items-center w-full max-w-xs mx-auto mb-4">
+                    
+                    <div class="flex items-center space-x-2">
+                        <button id="qty-minus" class="w-10 h-10 bg-gray-200 text-gray-800 text-xl font-bold rounded-lg transition-colors hover:bg-gray-300">-</button>
+                        <input type="text" id="qty-input" value="1" readonly class="w-12 h-10 text-center text-xl font-semibold border border-gray-300 rounded-lg focus:outline-none">
+                        <button id="qty-plus" class="w-10 h-10 bg-gray-200 text-gray-800 text-xl font-bold rounded-lg transition-colors hover:bg-gray-300">+</button>
+                    </div>
+                    
+                    
+                    <button id="modal-add-item-btn" data-base-price="0" class="flex-grow ml-4 py-3 text-sm md:text-base font-semibold rounded-xl shadow-lg transition-colors bg-brand-primary hover:opacity-90 text-white">
+                        Add Item | Rs. <span id="modal-total-price">1000.00</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+                         <!-- 12.Tracking page -->
+    <div id="track-order-page" class="app-page w-full max-w-sm hidden pt-8 min-h-screen bill-payment-bg">
+            <div class="px-6 w-full">
+                <h1 class="text-4xl font-extrabold text-gray-900 mb-8">
+                    Track the Order
+                </h1>
+
+                <div class="flex items-center p-4 rounded-xl shadow-lg mb-8" style="background-color: #A05252;">
+                    <button data-order-id="5873092124" data-delivery-lat="40.7580" data-delivery-lng="-73.9855" 
+                     class="bg-brand-primary p-3 rounded-xl shadow-lg cursor-pointer..." 
+                     onclick="trackOrder(this.getAttribute('data-order-id'), this.getAttribute('data-delivery-lat'), this.getAttribute('data-delivery-lng'))">
+                     <i class="fas fa-box text-white text-xl"></i>
+                    </button>
+                    <span class="text-xl font-semibold text-white">
+                        Order #5873092124 
+                    </span>
+                </div>
+                
+                <div class="relative mb-8 h-64 w-full">
+                    <img 
+                        src="" 
+                        onerror="this.onerror=null;this.src='https://placehold.co/400x256/D6C2BB/9B2341?text=Delivery+Map';"
+                        class="w-full h-full object-cover rounded-xl shadow-lg" 
+                        alt="Delivery map showing route"
+                    >
+                </div>
+                
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-2">
+                    Arriving in <span class="text-brand-primary">14 mins</span>
+                </h2>
+                
+                <div class="w-full bg-gray-300 rounded-full h-2.5 mb-8">
+                    <div class="bg-brand-primary h-2.5 rounded-full" style="width: 70%"></div>
+                </div>
+                <p class="text-center text-sm mt-4 text-gray-600 cursor-pointer hover:underline" onclick="showPage('home')">
+                &larr; Back to Home
+                </p>
+            </p>
+                </div>
+                
+            </div>
+        </div>
+
+
+    <script>
+        
+        const DELIVERY_FEE = 150.00; 
+
+        const menuItems = [
+            { 
+                title: "Chicken Noodles", 
+                price: 1000, 
+                ratings: 4.5, 
+                image: "image/noo3.jpg",
+                description: "Stir-fried noodles tossed with tender chicken strips, fresh vegetables, and savory sauces. A perfect balance of flavor and texture, served hot and satisfying every bite."
+            },
+            { 
+                title: "Sweet & Sour Chicken Noodles", 
+                price: 1200, 
+                ratings: 4, 
+                image: "image/noo4.jpg",
+                description: "A delightful blend of tangy sweetness and rich savory flavor. Comes with crispy chicken, peppers, pineapples, and a vibrant sweet and sour glaze."
+            },
+            { 
+                title: "Egg Noodles", 
+                price: 900, 
+                ratings: 3.5, 
+                image: "image/noo2.webp",
+                description: "Simple, classic egg noodles stir-fried to perfection with fresh shredded cabbage, carrots, and spring onions. A light and flavorful meal."
+            },
+            { 
+                title: "Cheese & Garlic Noodles", 
+                price: 1400, 
+                ratings: 5, 
+                image: "image/noo5.png",
+                description: "Creamy, decadent noodles smothered in a rich white sauce infused with fresh garlic, three types of melted cheese, and a sprinkle of herbs."
+            },
+            
+        ];
+
+        
+        let shoppingCart = [];
+        let paymentMethod = null;
+        
+        async function placeOrder(orderData) {
+    try {
+        const response = await fetch('http://localhost/food_app/api/orders_api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'place_order',
+                // Add all necessary order details here (e.g., user_id, items, address)
+                data: orderData 
+            })
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log("Order placed successfully! ID:", result.order_id);
+            // Update UI to show success
+        } else {
+            console.error("Order failed:", result.message);
+        }
+
+    } catch (error) {
+        console.error("Network error or server issue:", error);
+    }
+}
+
+        
+        function showPage(pageName) {
+            const container = document.getElementById('app-container');
+            
+            
+            container.classList.remove('max-w-sm', 'max-w-md', 'max-w-xl', 'max-w-2xl', 'max-w-3xl', 'max-w-4xl');
+
+            
+            if (pageName === 'home' || pageName === 'cart') {
+                
+                container.classList.add('sm:max-w-xl', 'md:max-w-2xl', 'lg:max-w-4xl');
+                
+                if (pageName === 'cart') {
+                    renderCartItems();
+                }
+            } else {
+                
+                container.classList.add('max-w-sm', 'sm:max-w-md'); 
+            }
+            container.classList.add('w-full');
+
+
+            
+            document.querySelectorAll('.app-page').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            const targetPage = document.getElementById(pageName + '-page');
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+
+                
+                if (pageName === 'register') {
+                    initRegisterValidation();
+                }
+
+                
+                if (pageName === 'bill') {
+                    renderBillDetails();
+                }
+            }
+        }
+
+        
+        function alertMessage(message, title) {
+            const modal = document.getElementById('custom-modal');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+       
+        function generateStars(ratings) {
+            const fullStars = Math.floor(ratings);
+            const hasHalfStar = ratings % 1 !== 0;
+
+            let starsHtml = '';
+            for (let i = 0; i < 5; i++) {
+                if (i < fullStars) {
+                    starsHtml += `<i class="fas fa-star text-star-gold text-sm"></i>`;
+                } else if (i === fullStars && hasHalfStar) {
+                    starsHtml += `<i class="fas fa-star-half-alt text-star-gold text-sm"></i>`;
+                } else {
+                    starsHtml += `<i class="far fa-star text-gray-300 text-sm"></i>`;
+                }
+            }
+            return starsHtml;
+        }
+
+        
+       function createItemCard(item) {
+  const stars = generateStars(item.ratings);
+
+  return `
+    <div class="bg-card-bg p-4 rounded-xl shadow-lg flex justify-between items-start transition-transform hover:shadow-xl cursor-pointer menu-item-card" data-item-title="${item.title}">
+      <!-- Text Content -->
+      <div class="flex flex-col pr-4 flex-grow">
+        <span class="text-xs text-brand-primary mb-1">▲ Trending</span>
+        <h3 class="text-lg font-bold text-gray-800 mb-1">${item.title}</h3>
+        <p class="text-xl font-semibold text-gray-900 mb-2">Rs. ${item.price.toFixed(2)}</p>
+        <div class="flex items-center">
+          <div>${stars}</div>
+          <span class="text-xs text-gray-500 ml-2">${item.ratings} / 5</span>
+        </div>
+      </div>
+
+      <!-- Image and Add Button -->
+      <div class="flex flex-col items-end flex-shrink-0">
+        <img 
+          src="${item.image}" 
+          onerror="this.onerror=null;this.src='https://placehold.co/100x100/D6C2BB/9B2341?text=Food';"
+          class="rounded-xl w-24 h-24 object-cover mb-2 shadow-md" 
+          alt="${item.title} image"
+        >
+        <button class="bg-brand-primary text-white text-sm font-semibold py-1 px-4 rounded-lg hover:opacity-90 transition-opacity mt-1 item-add-btn" data-item="${item.title}">ADD</button>
+      </div>
+    </div>
+  `;
+}
+
+
+        
+        function openItemDetailModal(item) {
+            
+            document.getElementById('modal-item-title').textContent = item.title;
+            document.getElementById('modal-item-image').src = item.image;
+            document.getElementById('modal-item-stars').innerHTML = generateStars(item.ratings);
+            document.getElementById('modal-item-ratings').textContent = `(${item.ratings * 2} ratings)`;
+            document.getElementById('modal-item-description').textContent = item.description;
+            document.getElementById('modal-item-price').textContent = item.price.toFixed(2);
+            
+            
+            const qtyInput = document.getElementById('qty-input');
+            const totalDisplay = document.getElementById('modal-total-price');
+            const addButton = document.getElementById('modal-add-item-btn');
+            
+            qtyInput.value = 1;
+            totalDisplay.textContent = item.price.toFixed(2);
+            addButton.setAttribute('data-base-price', item.price);
+            addButton.setAttribute('data-item-title', item.title);
+            
+            addButton.itemData = item; 
+
+            
+            const modal = document.getElementById('item-detail-modal');
+            const content = document.getElementById('item-detail-modal-content');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            
+            setTimeout(() => {
+                content.classList.remove('translate-y-full');
+            }, 10); 
+        }
+
+        function closeItemDetailModal() {
+            const modal = document.getElementById('item-detail-modal');
+            const content = document.getElementById('item-detail-modal-content');
+
+            
+            content.classList.add('translate-y-full');
+
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300); 
+        }
+
+        function updateQuantity(delta) {
+            const qtyInput = document.getElementById('qty-input');
+            let currentQty = parseInt(qtyInput.value, 10);
+            const newQty = Math.max(1, currentQty + delta); 
+            
+            if (newQty !== currentQty) {
+                qtyInput.value = newQty;
+                updateTotal(newQty);
+            }
+        }
+
+        function updateTotal(qty) {
+            const addButton = document.getElementById('modal-add-item-btn');
+            const basePrice = parseFloat(addButton.getAttribute('data-base-price'));
+            const totalPrice = basePrice * qty;
+            document.getElementById('modal-total-price').textContent = totalPrice.toFixed(2);
+        }
+        
+        // --- Shopping Cart Logic ---
+        
+        function addItemToCart(item, quantity) {
+            
+            const existingItemIndex = shoppingCart.findIndex(cartItem => cartItem.title === item.title);
+
+            if (existingItemIndex > -1) {
+                
+                shoppingCart[existingItemIndex].quantity += quantity;
+            } else {
+                
+                shoppingCart.push({
+                    title: item.title,
+                    price: item.price,
+                    quantity: quantity,
+                    subtotal: item.price * quantity 
+                });
+            }
+            updateCartCount();
+        }
+
+        function updateCartCount() {
+            const totalItems = shoppingCart.reduce((sum, item) => sum + item.quantity, 0);
+            const cartCountElement = document.getElementById('cart-count');
+
+            // --- Safety Check ---
+            if (!cartCountElement) {
+                return; // Exit if element is null
+            }
+            // --------------------
+            
+            cartCountElement.textContent = totalItems;
+            
+            if (totalItems > 0) {
+                cartCountElement.classList.remove('opacity-0');
+            } else {
+                cartCountElement.classList.add('opacity-0');
+            }
+        }
+
+        function renderCartItems() {
+            const listContainer = document.getElementById('cart-items-list');
+            const totalQtyDisplay = document.getElementById('cart-total-qty');
+            const grandTotalDisplay = document.getElementById('cart-grand-total');
+            const emptyMessage = document.getElementById('empty-cart-message');
+            const confirmBtn = document.getElementById('confirm-order-btn');
+
+            // --- Safety Check for DOM Elements ---
+            if (!listContainer || !totalQtyDisplay || !grandTotalDisplay || !emptyMessage || !confirmBtn) {
+                console.error("Cart DOM elements are missing. Cannot render cart.");
+                return;
+            }
+            // ------------------------------------
+
+            listContainer.innerHTML = ''; 
+            let totalQuantity = 0;
+            let grandTotal = 0;
+
+            if (shoppingCart.length === 0) {
+                emptyMessage.classList.remove('hidden');
+                confirmBtn.disabled = true;
+                listContainer.insertAdjacentElement('beforeend', emptyMessage);
+            } else {
+                emptyMessage.classList.add('hidden');
+                confirmBtn.disabled = false;
+
+                shoppingCart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    totalQuantity += item.quantity;
+                    grandTotal += itemTotal;
+
+                    const itemHtml = `
+                        <div class="flex flex-col p-4 bg-gray-50 rounded-xl shadow-sm">
+                            <div class="flex justify-between items-center pb-2 border-b border-gray-100">
+                                <span class="text-xl font-semibold text-gray-900">${item.title}</span>
+                                <span class="text-lg font-bold text-brand-primary">Rs. ${itemTotal.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-sm font-medium text-gray-600">Quantity: ${item.quantity} x Rs. ${item.price.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.insertAdjacentHTML('beforeend', itemHtml);
+                });
+            }
+            
+            totalQtyDisplay.textContent = totalQuantity;
+            grandTotalDisplay.textContent = grandTotal.toFixed(2);
+        }
+
+        // --- Bill Details Logic ---
+        function renderBillDetails() {
+            const billContent = document.getElementById('bill-details-content');
+            const billTotalDisplay = document.getElementById('bill-grand-total');
+            const billDeliveryFee = document.getElementById('bill-delivery-fee');
+            
+            if (!billContent || !billTotalDisplay || !billDeliveryFee) return;
+
+            billContent.innerHTML = '';
+            let subtotal = 0;
+            let totalQuantity = 0;
+
+            // Header for the bill card
+            let headerHtml = `
+                 <div class="flex justify-between text-lg font-bold text-gray-900 border-b border-gray-300 pb-2 mb-4">
+                    <span class="w-1/2">Item Name</span>
+                    <span class="w-1/4 text-center">Qty</span>
+                    <span class="w-1/4 text-right">Price</span>
+                </div>
+            `;
+            billContent.insertAdjacentHTML('beforeend', headerHtml);
+
+
+            // Individual item lines
+            shoppingCart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                totalQuantity += item.quantity;
+
+                const itemHtml = `
+                    <div class="flex justify-between items-center text-md text-gray-700 py-1">
+                        <span class="w-1/2 font-medium">${item.title}</span>
+                        <span class="w-1/4 text-center">${item.quantity}</span>
+                        <span class="w-1/4 text-right">Rs. ${item.price.toFixed(2)}</span>
+                    </div>
+                `;
+                billContent.insertAdjacentHTML('beforeend', itemHtml);
+            });
+
+            const grandTotal = subtotal + DELIVERY_FEE;
+
+            // Set Totals
+            billDeliveryFee.textContent = DELIVERY_FEE.toFixed(2);
+            billTotalDisplay.textContent = grandTotal.toFixed(2);
+
+            // Optional: Store the final total in the button for potential use
+            document.getElementById('proceed-to-pay-btn').setAttribute('data-total', grandTotal);
+        }
+        
+        // --- Geolocation Logic (NEW) ---
+
+        function getLocation() {
+            const resultDiv = document.getElementById('location-result');
+            const errorDiv = document.getElementById('location-error');
+            const addressInput = document.getElementById('delivery-address-input');
+            const coordsDisplay = document.getElementById('coords-display');
+            const mapLink = document.getElementById('google-map-link');
+            const confirmBtn = document.getElementById('confirm-location-btn');
+
+            resultDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            addressInput.value = 'Locating...'; // Temporary message
+            confirmBtn.disabled = true;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        // Display success message and map link
+                        coordsDisplay.textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+                        mapLink.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                        
+                        // Update address input with coordinates (simulating an address lookup)
+                        addressInput.value = `Current Location Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                        
+                        resultDiv.classList.remove('hidden');
+                        confirmBtn.disabled = false;
+                        alertMessage('Location retrieved! Click "Confirm Delivery Location" to proceed.', 'Success');
+                    },
+                    (error) => {
+                        // Handle errors
+                        let message = 'An unknown error occurred.';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                message = "User denied the request for Geolocation. Please enter the address manually.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message = "Location information is unavailable. Please enter the address manually.";
+                                break;
+                            case error.TIMEOUT:
+                                message = "The request to get user location timed out. Please enter the address manually.";
+                                break;
+                        }
+                        errorDiv.textContent = `Error: ${message}`;
+                        errorDiv.classList.remove('hidden');
+                        addressInput.value = ''; // Clear locating message
+                        alertMessage(message, 'Location Error');
+                    }
+                );
+            } else {
+                errorDiv.textContent = "Error: Geolocation is not supported by this browser. Please enter the address manually.";
+                errorDiv.classList.remove('hidden');
+                addressInput.value = '';
+                alertMessage('Geolocation is not supported by your browser.', 'Location Error');
+            }
+        }
+        
+        // --- Payment Validation Stub (NEW) ---
+        function validatePaymentForm(type) {
+            // Simple validation stub for demonstration
+            const pageId = type === 'visa' ? 'visa-payment' : 'mastercard-payment';
+            const page = document.getElementById(pageId + '-page');
+
+            const cardNumber = page.querySelector('input[placeholder="XXXX XXXX XXXX XXXX"]').value;
+            const holderName = page.querySelector('input[placeholder="John Doe"]').value;
+            const expiryMM = page.querySelector('input[placeholder="MM"]').value;
+            const expiryYY = page.querySelector('input[placeholder="YY"]').value;
+            const cvv = page.querySelector('input[placeholder="XXX"]').value;
+            
+            if (cardNumber.length < 16 || holderName.trim() === '' || expiryMM.length < 2 || expiryYY.length < 2 || cvv.length < 3) {
+                 alertMessage('Please enter complete and valid card details.', 'Validation Required');
+                 return false;
+            }
+            return true;
+        }
+
+
+        // --- Event Listeners and Initializers ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Initialization and Navigation ---
+            showPage('splash');
+
+            // Splash Page Listeners
+            document.getElementById('splash-login-btn').addEventListener('click', () => showPage('login'));
+            document.getElementById('splash-signup-btn').addEventListener('click', () => showPage('register'));
+            
+            // Navigation to Cart Page
+            document.getElementById('cart-icon').addEventListener('click', () => showPage('cart'));
+
+            // Register Button Click Handler (Fires only if validation passes and button is enabled)
+            document.getElementById('register-button').addEventListener('click', () => {
+                if (!document.getElementById('register-button').disabled) {
+                    // Navigate to the new branch selection page
+                    showPage('branch');
+                } else {
+                    alertMessage('Please fill out all fields correctly to register.', 'Validation Error');
+                }
+            });
+            
+            // Login Button Click Handler
+            document.getElementById('login-button').addEventListener('click', () => {
+                const emailInput = document.getElementById('login-email').value;
+                const passwordInput = document.getElementById('login-password').value;
+
+                if (emailInput.trim() === '' || passwordInput.trim() === '') {
+                    alertMessage('Please enter both email and password.', 'Login Error');
+                } else {
+                    
+                    showPage('branch');
+                }
+            });
+
+            
+            document.querySelectorAll('.branch-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    
+                    showPage('home');
+                });
+            });
+
+            
+            document.getElementById('confirm-order-btn').addEventListener('click', () => {
+                if (shoppingCart.length > 0) {
+                    showPage('bill');
+                } else {
+                    alertMessage('Your cart is empty. Please add items before confirming the order.', 'Cannot Confirm Order');
+                }
+            });
+
+            
+            document.getElementById('proceed-to-pay-btn').addEventListener('click', () => {
+                showPage('payment');
+            });
+
+            
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.addEventListener('click', (event) => {
+                    paymentMethod = event.currentTarget.getAttribute('data-payment');
+                    
+                    if (paymentMethod === 'visa') {
+                        showPage('visa-payment');
+                    } else if (paymentMethod === 'mastercard') {
+                        showPage('mastercard-payment');
+                    } else if (paymentMethod === 'cod') {
+                        
+                        showPage('address');
+                    }
+                });
+            });
+            
+            
+            document.getElementById('visa-enter-btn').addEventListener('click', () => {
+                if (validatePaymentForm('visa')) {
+                    showPage('address');
+                }
+            });
+            
+            
+            document.getElementById('mastercard-enter-btn').addEventListener('click', () => {
+                 if (validatePaymentForm('mastercard')) {
+                    showPage('address');
+                }
+            });
+            
+            
+            document.getElementById('use-current-location-btn').addEventListener('click', getLocation);
+            
+            
+            document.getElementById('confirm-location-btn').addEventListener('click', () => {
+                 alertMessage(`Order Confirmed! You selected location: ${document.getElementById('coords-display').textContent}. A confirmation will be sent shortly.`, 'Order Success');
+                 
+                // Reset cart and navigate back home after successful order placement
+                shoppingCart = [];
+                updateCartCount();
+                setTimeout(() => showPage('home'), 1500); 
+            });
+
+           
+            document.getElementById('confirm-address-order-btn').addEventListener('click', () => {
+                const address = document.getElementById('delivery-address-input').value.trim();
+                if (address === '') {
+                     alertMessage('Please enter a delivery address or use your current location.', 'Address Required');
+                     return;
+                }
+
+                const orderData = {
+                    // Note: You must implement a proper user session/login to get a real user_id
+                    address: address, 
+                    paymentMethod: paymentMethod, // 'cod', 'visa', or 'mastercard'
+                    items: shoppingCart.map(item => ({ 
+                        item_id: item.title, // You need to fetch the real item_id from the menu API later
+                        quantity: item.quantity,
+                        price: item.price
+                    }))
+                };
+                
+                alertMessage(`Order Confirmed! Delivery to: ${address}. A confirmation will be sent shortly.`, 'Order Success');
+                 
+                
+                shoppingCart = [];
+                updateCartCount();
+                setTimeout(() => showPage('home'), 1500); 
+            });
+
+
+            
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                document.getElementById('custom-modal').classList.add('hidden');
+                document.getElementById('custom-modal').classList.remove('flex');
+            });
+
+
+            
+            const menuContainer = document.getElementById('menu-list-container');
+            if (menuContainer) {
+                menuContainer.innerHTML = menuItems.map(item => 
+                    createItemCard(item)
+                ).join('');
+
+                
+                menuContainer.querySelectorAll('.menu-item-card').forEach(card => {
+                    card.addEventListener('click', (event) => {
+                        
+                        if (event.target.classList.contains('item-add-btn')) {
+                            return;
+                        }
+                        
+                        const itemTitle = card.getAttribute('data-item-title');
+                        const selectedItem = menuItems.find(item => item.title === itemTitle);
+                        if (selectedItem) {
+                            openItemDetailModal(selectedItem);
+                        }
+                    });
+                });
+
+                
+                menuContainer.querySelectorAll('.item-add-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        event.stopPropagation(); 
+                        const itemTitle = event.target.getAttribute('data-item');
+                        const item = menuItems.find(i => i.title === itemTitle);
+                        if (item) {
+                             addItemToCart(item, 1);
+                            alertMessage(`${item.title} added to cart! (Qty: 1)`, 'Item Added');
+                        }
+                    });
+                });
+            }
+
+            // --- Item Detail Modal Listeners ---
+            document.getElementById('close-item-detail-btn').addEventListener('click', closeItemDetailModal);
+            
+            document.getElementById('qty-minus').addEventListener('click', () => updateQuantity(-1));
+            document.getElementById('qty-plus').addEventListener('click', () => updateQuantity(1));
+
+            document.getElementById('modal-add-item-btn').addEventListener('click', (event) => {
+                const addButton = event.currentTarget;
+                const item = addButton.itemData;
+                const qty = parseInt(document.getElementById('qty-input').value, 10);
+                const total = document.getElementById('modal-total-price').textContent;
+
+                if (item && qty > 0) {
+                    addItemToCart(item, qty);
+                    alertMessage(`${item.title} added to cart! (Qty: ${qty}, Total: Rs. ${total})`, 'Item Added');
+                    closeItemDetailModal();
+                } else {
+                     alertMessage('Cannot add item. Please select a valid quantity.', 'Error');
+                }
+            });
+
+
+            
+            function checkRegisterForm() {
+               
+                const fields = ['firstName', 'lastName', 'phone', 'email', 'password', 'confirmPassword'];
+                let allValid = true;
+
+                
+                fields.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (!input || input.value.trim() === '') {
+                        allValid = false;
+                    }
+                });
+
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const email = document.getElementById('email').value;
+
+                
+                if (password !== confirmPassword || password.length < 6) { 
+                    allValid = false;
+                }
+                
+                
+                if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+                    allValid = false;
+                }
+
+                const registerButton = document.getElementById('register-button');
+                
+                if (allValid) {
+                    registerButton.disabled = false;
+                    registerButton.classList.remove('bg-button-default');
+                    registerButton.classList.add('bg-brand-primary', 'text-white');
+                } else {
+                    registerButton.disabled = true;
+                    registerButton.classList.remove('bg-brand-primary');
+                    registerButton.classList.add('bg-button-default', 'text-white');
+                }
+            }
+
+            function initRegisterValidation() {
+                const form = document.getElementById('register-form');
+                form.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', checkRegisterForm);
+                });
+                checkRegisterForm();
+            }
+        })
+        function trackOrder(orderId, deliveryLat, deliveryLng) {
+                 
+            document.getElementById('order-id-display').textContent = `Order #${orderId}`;
+
+                
+            const restaurantCoords = { lat: 40.7128, lng: -74.0060 }; 
+            const deliveryCoords = { lat: parseFloat(deliveryLat), lng: parseFloat(deliveryLng) };
+            calculateAndDisplayRoute(restaurantCoords, deliveryCoords);
+
+             
+            showPage('track-order'); 
+            }
+             
+            document.getElementById('track-order-btn').addEventListener('click', () => {
+                showPage('track-order');
+            });
+    </script>
+</body>
+</html>
